@@ -1,8 +1,12 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="pt-PT"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Agenda Manicure</title>
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Agenda"><meta name="theme-color" content="#0d0c0c"><link rel="apple-touch-icon" href="icon.png"><link rel="icon" href="icon.png">
+<!-- 🔥 FIREBASE SDK v10 compat (REALTIME DATABASE) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
@@ -29,7 +33,7 @@ button,.btn{font:inherit;font-weight:700;border:0;border-radius:14px;padding:12p
 .dn{display:grid;grid-template-columns:48px 1fr 48px 74px;gap:6px}.dn button{padding:0}
 .ap{display:flex;gap:10px;align-items:center;cursor:pointer;border-left:5px solid var(--ac)}
 .ap.sc{border-left-color:var(--ok)}.ap.sf,.ap.sx{border-left-color:var(--mu);opacity:.65}
-.ap.ev{border-left-color:#8a6f79; background:var(--bg)} /* Cor para eventos/folgas */
+.ap.ev{border-left-color:#8a6f79; background:var(--bg)}
 .tm{font-family:"Playfair Display",serif;font-weight:700;font-size:18px;min-width:52px}.bd{flex:1;min-width:0}
 .pr{text-align:right}.ok{min-height:34px;padding:4px 10px;font-size:13px;margin-top:4px;background:var(--ok)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}.chip{width:auto;min-height:38px;padding:6px 12px;font-size:14px;background:var(--so);color:var(--ac)}
@@ -45,7 +49,6 @@ button,.btn{font:inherit;font-weight:700;border:0;border-radius:14px;padding:12p
 .tg{font-weight:700;color:var(--ac)}.tg.p{color:#c78a00}.tg.c{color:var(--ok)}.tg.x,.tg.f{color:var(--mu)}.ap.sp{border-left-color:#e0a100}.seg.col{flex-direction:column}.seg.col button{flex:none}
 .alm{position:fixed;inset:0;z-index:70;background:var(--er);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;animation:pl .6s infinite alternate}.alm button{max-width:340px}@keyframes pl{to{background:#7f1d1d}}
 textarea{min-height:70px;font:13px monospace}
-/* Clientes */
 .cli{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--bd)}
 .cli .num{font-family:"Playfair Display",serif;font-weight:700;font-size:18px;color:var(--ac);min-width:36px}
 .cli .info{flex:1;min-width:0}
@@ -57,8 +60,6 @@ textarea{min-height:70px;font:13px monospace}
 .hist-item{padding:8px 0;border-top:1px solid var(--bd);font-size:14px}
 .hist-item .mu{font-size:12px}
 .notes-preview{font-size:12px;color:var(--mu);margin-top:2px;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
-
-/* ========== ESTILOS DO CALENDÁRIO ========== */
 .cal-btn{width:48px;min-height:48px;padding:0;font-size:20px;display:flex;align-items:center;justify-content:center}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;margin-top:10px}
 .cal-header{font-weight:700;color:var(--mu);font-size:12px;margin-bottom:6px}
@@ -77,7 +78,6 @@ textarea{min-height:70px;font:13px monospace}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .modal-header h3{margin:0;font-family:"Playfair Display",serif;color:var(--ac);font-size:18px}
-/* ========================================== */
 </style></head><body><main><div class="brand hid" id="brand"><img id="logo" alt=""><span id="bn"></span></div>
 
 <!-- ========== AGENDA ========== -->
@@ -152,7 +152,7 @@ textarea{min-height:70px;font:13px monospace}
   <p class="mu">O alerta toca e abre o aviso enquanto a agenda estiver aberta no ecrã. Para ser avisada com o ecrã bloqueado ou a agenda fechada, usa o botão Lembrete no Calendário, no separador Agenda.</p>
  </div>
  <div class="card"><h2 style="font-size:16px">Cópia de segurança</h2>
-  <p class="mu">Os dados ficam só neste telemóvel. Guarda uma cópia de vez em quando.</p>
+  <p class="mu">Os dados ficam guardados localmente e no Firebase. Guarda uma cópia de vez em quando por segurança.</p>
   <button class="gh" id="bx">Exportar cópia</button>
   <label for="bi">Para restaurar, cola aqui o conteúdo da cópia:</label>
   <textarea id="bi"></textarea>
@@ -170,7 +170,6 @@ textarea{min-height:70px;font:13px monospace}
       <h3 id="calModalTitle">Calendário</h3>
       <button class="gh" style="width:auto;min-height:36px;padding:4px 12px" id="calModalClose">Fechar</button>
     </div>
-    
     <div id="calMonthView">
       <div class="dn" style="grid-template-columns:48px 1fr 48px;">
         <button class="gh" id="caP" aria-label="Mês anterior">‹</button>
@@ -179,7 +178,6 @@ textarea{min-height:70px;font:13px monospace}
       </div>
       <div class="cal-grid" id="calGrid"></div>
     </div>
-
     <div id="calDayView" class="hid" style="margin-top:20px; border-top: 1px solid var(--bd); padding-top: 14px;">
       <div class="row" style="margin-bottom:10px">
         <h3 id="calDayTitle" style="font-size:16px; color:var(--ac)"></h3>
@@ -221,7 +219,7 @@ textarea{min-height:70px;font:13px monospace}
  <div class="g2"><button class="gh" id="eCan">Fechar</button><button class="dl" id="eDel">Apagar</button></div>
 </div></div>
 
-<!-- ========== NOVO: EDITOR DE EVENTOS (FOLGAS/REUNIÕES) ========== -->
+<!-- ========== EDITOR DE EVENTOS (FOLGAS/REUNIÕES) ========== -->
 <div id="evEd" class="sheet hid"><div>
  <h2 id="evEdT">Novo Evento</h2>
  <div class="g2">
@@ -292,6 +290,32 @@ textarea{min-height:70px;font:13px monospace}
 
 <script>
 "use strict";
+
+/* ═══════════════════════════════════════════════════════════
+   🔥 FIREBASE — REALTIME DATABASE (credenciais preenchidas)
+   ═══════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyAy8rM5C1lYbWK2k7iP6J8WzBGbrDhB0Wk",
+  authDomain: "calendario-tayane-nail-design.firebaseapp.com",
+  databaseURL: "https://calendario-tayane-nail-design-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "calendario-tayane-nail-design",
+  storageBucket: "calendario-tayane-nail-design.firebasestorage.app",
+  messagingSenderId: "853496519038",
+  appId: "1:853496519038:web:44813eceec3a537deefb2f"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db  = firebase.database();
+const fsa = firebase.auth();
+
+fsa.signInAnonymously().catch(err => console.warn('[FB] Auth:', err.code, err.message));
+
+const fbRef = db.ref('agenda/data');
+let fbReady = false;
+let fbSaveTimer = null;
+let fbLastJson = '';
+/* ═══════════════════════════════════════════════════════════ */
+
 const $ = id => document.getElementById(id);
 const KEY = 'agenda:v1';
 const p2 = n => String(n).padStart(2, '0');
@@ -328,9 +352,24 @@ try {
   }
 } catch (e) {}
 
+/* ═══════════════════════════════════════════════════════════
+   🔥 SAVE — guarda local + Realtime Database (com debounce)
+   ═══════════════════════════════════════════════════════════ */
 const save = () => {
   try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+
+  clearTimeout(fbSaveTimer);
+  fbSaveTimer = setTimeout(async () => {
+    try {
+      const payload = JSON.parse(JSON.stringify(S));  // limpa undefined
+      fbLastJson = JSON.stringify(payload);
+      await fbRef.set(payload);
+    } catch (e) {
+      console.warn('[FB] save:', e.code || e.message);
+    }
+  }, 500);
 };
+/* ═══════════════════════════════════════════════════════════ */
 
 const ymd = d => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
 const fd = s => s.split('-').reverse().join('/');
@@ -392,7 +431,7 @@ function label(t, a) {
 
 function stats(t, a) {
   const [f, e] = range(t, a);
-  const L = S.apps.filter(x => x.date >= f && x.date <= e && x.status === 'c' && !x.isEvent); // Ignora eventos no relatório
+  const L = S.apps.filter(x => x.date >= f && x.date <= e && x.status === 'c' && !x.isEvent);
   const sv = {}, dy = {}, py = { D: 0, M: 0, C: 0, '': 0 };
   let eu = 0, mi = 0, ds = 0;
   L.forEach(x => {
@@ -521,7 +560,6 @@ function openClEd(id) {
   $('clNotes').value = CL_EDIT.notes || '';
   $('clDel').classList.toggle('hid', !c);
 
-  // Histórico de marcações
   const hist = c ? clientHistory(c.name) : [];
   if (hist.length) {
     const total = hist.filter(a => a.status === 'c').reduce((t, a) => t + sum(a), 0);
@@ -635,8 +673,7 @@ $('dd').onchange = rAg;
 function rAg() {
   const d = $('dd').value || ymd(new Date());
   const L = S.apps.filter(a => a.date === d).sort((a, b) => a.time.localeCompare(b.time));
-  
-  // Filtra apenas os serviços concluídos de clientes para os totais
+
   const c = L.filter(a => a.status === 'c' && !a.isEvent);
   const pv = L.filter(a => 'pmc'.includes(a.status) && !a.isEvent);
 
@@ -648,7 +685,7 @@ function rAg() {
 
   const np = L.filter(a => a.status === 'p' && !a.isEvent).length;
   const nz = c.filter(a => !a.pay).length;
-  
+
   $('dPv').textContent = 'Previsto: ' + eur(sumA(pv)) + ' · ' + pv.length + ' marcações' +
     (np ? ' · ' + np + ' por confirmar' : '') +
     (nz ? ' · ' + nz + ' sem pagamento definido' : '');
@@ -656,7 +693,6 @@ function rAg() {
   $('list').innerHTML = L.length
     ? L.map(a => {
         if (a.isEvent) {
-          // Renderização de um Evento/Folga
           return `<div class="card ap ev" data-id="${a.id}">
             <div class="tm">${a.time}</div>
             <div class="bd">
@@ -668,7 +704,6 @@ function rAg() {
             </div>
           </div>`;
         }
-        // Renderização de uma Marcação de Cliente normal
         return `<div class="card ap s${a.status}" data-id="${a.id}">
         <div class="tm">${a.time}</div>
         <div class="bd">
@@ -701,9 +736,9 @@ $('list').onclick = e => {
   if (c) {
     const app = S.apps.find(x => x.id === c.dataset.id);
     if (app && app.isEvent) {
-      openEvEd(app.id); // Abre o editor de eventos se for um evento
+      openEvEd(app.id);
     } else {
-      openEd(c.dataset.id); // Abre o editor de clientes
+      openEd(c.dataset.id);
     }
   }
 };
@@ -839,7 +874,6 @@ $('eSave').onclick = () => {
   E.client = $('eC').value.trim();
   E.phone = $('eP').value.trim();
 
-  // Auto-adicionar cliente novo ao catálogo
   if (E.client) {
     const exists = S.clients.find(c => (c.name || '').toLowerCase() === E.client.toLowerCase());
     if (!exists && E.phone) {
@@ -871,7 +905,7 @@ $('eDel').onclick = () => two($('eDel'), () => {
   rAg();
 }, 'Confirmar apagar');
 
-/* ========== NOVO: EDITOR DE EVENTOS ========== */
+/* ========== EDITOR DE EVENTOS ========== */
 let EV_EDIT = null;
 
 function openEvEd(id) {
@@ -891,7 +925,7 @@ function openEvEd(id) {
   $('evN').value = EV_EDIT.client;
   $('evO').value = EV_EDIT.notes || '';
   $('evDel').classList.toggle('hid', !a);
-  
+
   $('evEd').classList.remove('hid');
   $('evEd').scrollTop = 0;
 }
@@ -901,13 +935,13 @@ $('evCan').onclick = () => $('evEd').classList.add('hid');
 $('evSave').onclick = () => {
   const name = $('evN').value.trim();
   if (!name) { toast('Escreve o nome do evento'); return; }
-  
+
   EV_EDIT.date = $('evD').value || EV_EDIT.date;
   EV_EDIT.time = $('evH').value || '12:00';
   EV_EDIT.client = name;
   EV_EDIT.notes = $('evO').value.trim();
-  EV_EDIT.status = 'c'; // Não afeta faturamento por ser isEvent
-  EV_EDIT.items = [{ name: 'Evento', price: 0, list: 0, min: 0 }]; // Placeholder
+  EV_EDIT.status = 'c';
+  EV_EDIT.items = [{ name: 'Evento', price: 0, list: 0, min: 0 }];
 
   if (EV_EDIT.id) {
     const k = S.apps.findIndex(x => x.id === EV_EDIT.id);
@@ -917,12 +951,11 @@ $('evSave').onclick = () => {
     S.apps.push(EV_EDIT);
   }
   save();
-  $('dd').value = EV_EDIT.date; // Muda a agenda principal para o dia do evento
+  $('dd').value = EV_EDIT.date;
   $('evEd').classList.add('hid');
   rAg();
   toast('Evento guardado');
-  
-  // Atualiza o calendário se estiver aberto
+
   if(!$('calModal').classList.contains('hid')) {
       rCa();
       renderCalDay(caSelected);
@@ -1402,17 +1435,17 @@ async function fetchHolidays(year) {
 async function rCa() {
   const year = caDate.getFullYear();
   const month = caDate.getMonth();
-  
+
   $('caMonth').textContent = caDate.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
-  
+
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
-  
-  let startDay = firstDay.getDay(); 
+
+  let startDay = firstDay.getDay();
   if (startDay === 0) startDay = 6; else startDay -= 1;
-  
+
   const holidays = await fetchHolidays(year);
-  
+
   const appsByDate = {};
   S.apps.forEach(a => {
     if (!appsByDate[a.date]) appsByDate[a.date] = [];
@@ -1434,18 +1467,18 @@ async function rCa() {
     const isSelected = dateStr === caSelected;
     const hasApp = !!appsByDate[dateStr];
     const holidayName = holidays[dateStr];
-    
+
     let cls = 'cal-day';
     if (isToday) cls += ' today';
     if (isSelected) cls += ' selected';
-    
+
     html += `<div class="${cls}" data-date="${dateStr}">
       <span>${d}</span>
       ${hasApp ? '<div class="cal-dot"></div>' : ''}
       ${holidayName ? `<div class="cal-holiday" title="${esc(holidayName)}">F</div>` : ''}
     </div>`;
   }
-  
+
   $('calGrid').innerHTML = html;
   renderCalDay(caSelected);
 }
@@ -1454,9 +1487,9 @@ function renderCalDay(dateStr) {
   caSelected = dateStr;
   $('calDayView').classList.remove('hid');
   $('calDayTitle').textContent = new Date(dateStr + 'T12:00').toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' });
-  
+
   const dayApps = S.apps.filter(a => a.date === dateStr).sort((a,b) => a.time.localeCompare(b.time));
-  
+
   if (dayApps.length) {
     $('calDayList').innerHTML = dayApps.map(a => {
        const isEv = a.isEvent;
@@ -1529,6 +1562,54 @@ $('calDayAdd').onclick = () => {
   openEvEd(null);
 };
 /* ========================================== */
+
+/* ═══════════════════════════════════════════════════════════
+   🔥 SINCRONIZAÇÃO EM TEMPO REAL (Realtime Database → app)
+   ═══════════════════════════════════════════════════════════ */
+fbRef.on('value', snap => {
+
+  if (!fbReady) {
+    if (!snap.exists()) {
+      // Base vazia → sobe o local
+      try { fbRef.set(JSON.parse(JSON.stringify(S))); } catch (e) {}
+    } else {
+      const d = snap.val();
+      if (d && Array.isArray(d.services) && Array.isArray(d.apps)) {
+        S = Object.assign(S, d);
+        if (!Array.isArray(S.clients)) S.clients = [];
+        try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+        fbLastJson = JSON.stringify(d);
+        brand(); rAg(); rCl();
+      }
+    }
+    fbReady = true;
+    return;
+  }
+
+  if (!snap.exists()) return;
+
+  const d = snap.val();
+  if (!d) return;
+  const json = JSON.stringify(d);
+  if (json === fbLastJson) return;   // escrita nossa — ignora o eco
+
+  fbLastJson = json;
+  S = Object.assign(S, d);
+  if (!Array.isArray(S.clients)) S.clients = [];
+
+  const active = document.activeElement;
+  const editing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+
+  if (!editing) {
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+    if (!$('v-ag').classList.contains('hid')) rAg();
+    if (!$('v-cl').classList.contains('hid')) rCl();
+    if (!$('v-sv').classList.contains('hid')) rSv();
+    if (!$('v-rs').classList.contains('hid')) rRs();
+    brand();
+  }
+});
+/* ═══════════════════════════════════════════════════════════ */
 
 /* ========== INÍCIO ========== */
 brand();
